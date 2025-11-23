@@ -5,18 +5,23 @@
 # %% auto 0
 __all__ = ['bc']
 
-# %% ../nbs/00_core.ipynb 4
+# %% ../nbs/00_core.ipynb 3
 from dialoghelper.core import *
+from fastcore.tools import in_notebook
+if in_notebook:
+    import sys; sys.path.append('..')
 from . import dhb, fab, dhp
 __all__ = ['dhb', 'fab', 'dhp']
 
 
-# %% ../nbs/00_core.ipynb 8
-# Note that these get commented out when run
+# %% ../nbs/00_core.ipynb 6
+bc = dhb.c()
+
+# %% ../nbs/00_core.ipynb 7
 bc = dhb.c("openrouter/openai/gpt-5-codex")
 
 # %% ../nbs/00_core.ipynb 9
-# bc("Hi, can you use tools?")
+bc("Hi, can you use tools?")
 
 # %% ../nbs/00_core.ipynb 17
 # Uncomment and submit the line below if you do not already have a copy of fabric in your fabric folder
