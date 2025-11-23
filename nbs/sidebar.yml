@@ -1,0 +1,8 @@
+website:
+  sidebar:
+    contents:
+      - index.ipynb
+      - 00_core.ipynb
+      - dhb.ipynb
+      - dhp.ipynb
+      - fab.ipynb
