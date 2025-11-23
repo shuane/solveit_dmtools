@@ -99,7 +99,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             self.add_vars(var_names)
         self.hist = self._build_hist(msgs, msgid=curr_msg['id'])
         start = len(self.hist)
-        update_msg(msgid=curr_msg['id'], content=f"# {curr_msg['content'].replace('\n', '\n# ')}", skipped=1, o_collapsed=1)
+        update_msg(msgid=curr_msg['id'], content=f"# " + curr_msg['content'].replace('\n', '\n# '), skipped=1, o_collapsed=1)
         response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
         output = self._new_msgs_to_output(start)
         add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt')
@@ -112,7 +112,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             except StopIteration: curr = len(msgs)
         hist = []
         for m in msgs[:curr]:
-            if m['msg_type'] == 'code': hist.append({'role': 'user', 'content': f"```python\n{m['content']}\n```\nOutput: {m.get('output', [])}"})
+            if m['msg_type'] == 'code': hist.append({'role': 'user', 'content': "```python\n" + m['content'] + "\n```\nOutput: " + m.get('output', [])})
             elif m['msg_type'] == 'note': hist.append({'role': 'user', 'content': m['content']})
             elif m['msg_type'] == 'prompt':
                 hist.append({'role': 'user', 'content': m['content']})
