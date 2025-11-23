@@ -7,25 +7,19 @@ __all__ = ['bc']
 
 # %% ../nbs/00_core.ipynb 3
 from dialoghelper.core import *
-from fastcore.tools import in_notebook
-if in_notebook:
-    import sys; sys.path.append('..')
-from . import dhb, fab, dhp
-__all__ = ['dhb', 'fab', 'dhp']
-
-
-# %% ../nbs/00_core.ipynb 6
-bc = dhb.c()
 
 # %% ../nbs/00_core.ipynb 7
+bc = dhb.c()
+
+# %% ../nbs/00_core.ipynb 8
 bc = dhb.c("openrouter/openai/gpt-5-codex")
 
-# %% ../nbs/00_core.ipynb 9
+# %% ../nbs/00_core.ipynb 10
 bc("Hi, can you use tools?")
 
-# %% ../nbs/00_core.ipynb 17
+# %% ../nbs/00_core.ipynb 18
 # Uncomment and submit the line below if you do not already have a copy of fabric in your fabric folder
 #!git clone --depth 1 https://github.com/danielmiessler/fabric.git
 
-# %% ../nbs/00_core.ipynb 25
+# %% ../nbs/00_core.ipynb 26
 bc("That's not quite right - can you compare your answer to https://raw.githubusercontent.com/shuane/blogtopod/refs/heads/main/README.md and correct it?")
