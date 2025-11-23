@@ -61,7 +61,8 @@ Use a Socratic approach - guide through questions rather than direct answers - u
 
         if model is None:
             _m1 = input("Please enter part of a model name to pick your model. Remember you also need to have secret for their API key already defined in your secrets:")
-            print(f"Please try again by using e.g. `bc = dhb.c('model_name')` with a modle name in\n{'\n'.join([m for m in self.models if _m1 in m])}")
+            print("Please try again by using e.g. `bc = dhb.c('model_name')` with a model name in:")
+            print('\n'.join([m for m in self.models if _m1 in m]))
             return None
         if model not in self.models:
             raise ValueError(f"Model {model} not found in LiteLLM models. Please check the model name or use a different model.")
