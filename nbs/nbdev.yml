@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "solveit_dmtools"
+  site-url: "https://shuane.github.io/solveit_dmtools"
+  description: "Personalized tools to add functionality to SolveIt"
+  repo-branch: main
+  repo-url: "https://github.com/shuane/solveit_dmtools"
