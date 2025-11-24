@@ -69,7 +69,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         self.model = model
         self.vars_for_hist = dict()
         if var_names is not None:
-            self.add_vars(vars_for_hist)
+            self.add_vars(var_names)
         if tools is None:
             tools = [read_url]
         super().__init__(model=model, sp=sp, temp=temp, search=search, tools=tools, hist=hist, ns=ns, cache=cache, cache_idxs=cache_idxs, ttl=ttl)
@@ -95,11 +95,10 @@ Use a Socratic approach - guide through questions rather than direct answers - u
                 ):
         msgs = [m for m in find_msgs() if m['pinned'] or not m['skipped']]
         curr_msg = read_msg(0)['msg']
-        if var_names:
-            self.add_vars(var_names)
+        if var_names: self.add_vars(var_names)
         self.hist = self._build_hist(msgs, msgid=curr_msg['id'])
         start = len(self.hist)
-        update_msg(msgid=curr_msg['id'], content=f"# " + curr_msg['content'].replace('\n', '\n# '), skipped=1, o_collapsed=1)
+        update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), i_collapsed=1, o_collapsed=1)
         response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
         output = self._new_msgs_to_output(start)
         add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt')

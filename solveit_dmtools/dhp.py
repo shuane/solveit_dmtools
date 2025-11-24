@@ -6,7 +6,7 @@ __all__ = ['doc', 'u', 'understand', 'p', 'plan', 'x', 'execute', 'a', 'act', 'r
 
 # %% ../nbs/02_dhp.ipynb 0
 #| export
-#| default_exp dhp
+#|default_exp dhp
 
 # %% ../nbs/02_dhp.ipynb 1
 doc = """**Dialog Helper for Polya's Problem-Solving Method**

@@ -5,7 +5,7 @@ __all__ = ['doc', 'p', 'PatternFunction', 'FabricPatterns', 'compress']
 
 # %% ../nbs/03_fab.ipynb 0
 #| export
-#| default_exp fab
+#|default_exp fab
 
 # %% ../nbs/03_fab.ipynb 1
 doc = """**fab - Open Source 'fabric' prompts made quickly available in SolveIt**
