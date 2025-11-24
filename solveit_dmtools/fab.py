@@ -62,6 +62,8 @@ class FabricPatterns:
         self.pattern_descriptions = self._load_pattern_descriptions()
         if os.path.exists(patterns_path):
             self._load_patterns()
+        else:
+            self.help = print("Please get a copy of fabric in your /app/data folder - e.g. !cd /app/data; git clone --depth 1 https://github.com/danielmiessler/fabric.git")
 
     def _load_pattern_descriptions(self):
         suggest_pattern_file = self.patterns_path / "suggest_pattern" / "user.md"
