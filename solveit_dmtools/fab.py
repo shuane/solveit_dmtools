@@ -39,9 +39,8 @@ Most Common Syntax: `prompt="Your Prompt"` in one cell then `fab.p.pattern_name(
 - For Creating Quizzes: `fab.p.create_quiz()`
 """
 
-# Installation steps at https://gist.github.com/shuane/d3baa91c20d6556cd630dc5e8f648359
-
 __all__ = ['p', 'compress', 'doc', 'PatternFunction', 'FabricPatterns']
+import os
 
 class PatternFunction:
     def __init__(self, func, name, description):
@@ -61,7 +60,8 @@ class FabricPatterns:
         from pathlib import Path    
         self.patterns_path = Path(patterns_path)
         self.pattern_descriptions = self._load_pattern_descriptions()
-        self._load_patterns()
+        if os.path.exists(patterns_path):
+            self._load_patterns()
 
     def _load_pattern_descriptions(self):
         suggest_pattern_file = self.patterns_path / "suggest_pattern" / "user.md"
