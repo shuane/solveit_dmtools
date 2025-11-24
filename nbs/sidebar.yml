@@ -2,7 +2,6 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_core.ipynb
-      - dhb.ipynb
-      - dhp.ipynb
-      - fab.ipynb
+      - 01_dhb.ipynb
+      - 02_dhp.ipynb
+      - 03_fab.ipynb
