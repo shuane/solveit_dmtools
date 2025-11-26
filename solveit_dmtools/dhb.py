@@ -119,7 +119,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
                 hist.append({'role': 'user', 'content': m['content']})
                 if m.get('output'): hist.append({'role': 'assistant', 'content': m['output']})
         
-        hist = hist + self._vars_as_msg() + [{'role': 'assistant', 'content': ''}] # empty assistant msg to prevent flipping chat msg to look like prefill
+        hist = hist + self._vars_as_msg() + [{'role': 'assistant', 'content': '.'}] # empty assistant msg to prevent flipping chat msg to look like prefill
         return hist
 
     def _vars_as_msg(self):
