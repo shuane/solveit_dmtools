@@ -110,19 +110,20 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             try: curr = next(i for i,m in enumerate(msgs) if m['id'] == msgid)
             except StopIteration: curr = len(msgs)
         hist = []
+        print(f"{curr} of {len(msgs)}")
         for m in msgs[:curr]:
             eol = '\n'
             if m['msg_type'] == 'code': hist.append({'role': 'user', 'content': f"```python{eol}{m['content']}{eol}```{eol}Output: {m.get('output', '[]')}"})
-            elif m['msg_type'] == 'note': hist.append({'role': 'user', 'content': m['content']})
+            elif m['msg_type'] == 'note' or m['msg_type'] == 'raw': hist.append({'role': 'user', 'content': m['content']})
             elif m['msg_type'] == 'prompt':
                 hist.append({'role': 'user', 'content': m['content']})
                 if m.get('output'): hist.append({'role': 'assistant', 'content': m['output']})
         
-        hist = mk_msgs(hist + self._vars_as_msg())
+        hist = hist + self._vars_as_msg() + [{'role': 'assistant', 'content': ''}] # empty assistant msg to prevent flipping chat msg to look like prefill
         return hist
 
     def _vars_as_msg(self):
-        if len(self.vars_for_hist):
+        if self.vars_for_hist and len(self.vars_for_hist.keys()):
             content = "Here are the requested variables:\n" + "\n".join([f"$`{v.strip()}`: {globals().get(v.strip(), 'NOT FOUND')}" for v in self.vars_for_hist.keys()])
             return [{'role': 'user', 'content': content}]
         else:
@@ -131,21 +132,21 @@ Use a Socratic approach - guide through questions rather than direct answers - u
     def _new_msgs_to_output(self, start):
         new_msgs = self.hist[start+1:]
         parts = []
-        for m in new_msgs:
+        for i, m in enumerate(new_msgs):
             if m.get('role') == 'assistant' and m.get('tool_calls'):
                 for tc in m['tool_calls']:
                     result_msg = next((r for r in new_msgs if r.get('tool_call_id') == tc['id']), None)
-                    if result_msg: parts.append(self._format_tool_details(tc['id'], tc['function']['name'], json.loads(tc['function']['arguments']), result_msg['content']))
+                    if result_msg: parts.append(self._format_tool_details(tc['id'], tc['function']['name'], json.loads(tc['function']['arguments']), result_msg['content'], is_last_msg=(i == len(new_msgs)-1)))
             elif m.get('role') == 'assistant' and m.get('content'):
                 content = m['content']
                 if 'You have no more tool uses' not in content: parts.append(content)
         return '\n\n'.join(parts)
     
-    def _trunc_tool_result(self, result, max_len=100):
-        if len(str(result)) <= max_len: return result
+    def _trunc_tool_result(self, result, max_len=100, is_last_msg=False):
+        if len(str(result)) <= max_len or is_last_msg: return result
         return str(result)[:max_len] + '<TRUNCATED>'
     
-    def _format_tool_details(self, tool_id, func_name, args, result):
+    def _format_tool_details(self, tool_id, func_name, args, result, is_last_msg=False):
         result_str = self._trunc_tool_result(result)
         tool_json = json.dumps({"id": tool_id, "call": {"function": func_name, "arguments": args}, "result": result_str}, indent=2)
         return f"<details class='tool-usage-details'>\n\n```json\n{tool_json}\n```\n\n</details>"    
