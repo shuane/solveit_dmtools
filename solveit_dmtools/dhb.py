@@ -124,7 +124,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
 
     def _vars_as_msg(self):
         if self.vars_for_hist and len(self.vars_for_hist.keys()):
-            content = "Here are the requested variables:\n" + "\n".join([f"$`{v.strip()}`: {globals().get(v.strip(), 'NOT FOUND')}" for v in self.vars_for_hist.keys()])
+            content = "Here are the requested variables:\n" + json.dumps(self.vars_for_hist)
             return [{'role': 'user', 'content': content}]
         else:
             return []
@@ -160,7 +160,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         
         # Add each var to the self.vars_for_hist dictionary
         for v in var_names:
-            self.vars_for_hist[v.strip()] = globals().get(v.strip(), 'NOT FOUND')
+            self.vars_for_hist[v.strip()] = globals().get(v.strip(), 'NOT AVAILABLE')
     
     def add_tools(self, tool_names:Union[list,str]=None):
         "Add tools to the chat's tool list"
