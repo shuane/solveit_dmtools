@@ -44,7 +44,7 @@ class BackupChat(Chat):
                 cache=False,
                 cache_idxs: list = [-1],
                 ttl=None,
-                var_names: list = None,
+                var_names: Union[list,str] = None,
     ):
         if sp is None or sp == '':
             sp = """You're continuing a conversation from another session. Variables are marked as $`varname` and tools as &`toolname` in the context.
