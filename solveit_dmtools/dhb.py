@@ -26,7 +26,7 @@ from dialoghelper.core import *
 from lisette import *
 from typing import Optional, Union
 from ipykernel_helper import read_url
-# from fastcore.utils import patch
+import inspect
 
 class BackupChat(Chat):
     models = None
@@ -45,6 +45,7 @@ class BackupChat(Chat):
                 cache_idxs: list = [-1],
                 ttl=None,
                 var_names: Union[list,str] = None,
+                hide_msg:bool=False, # whether to hide the cell that includes a BackupChat.__call__
     ):
         if sp is None or sp == '':
             sp = """You're continuing a conversation from another session. Variables are marked as $`varname` and tools as &`toolname` in the context.
@@ -58,7 +59,6 @@ You are not able to run other code so you cannot store your own variables or do 
 Use a Socratic approach - guide through questions rather than direct answers - unless the user explicitly asks you to do something differently."""
         if self.models is None:
             self.models = self.get_litellm_models()
-
         if model is None:
             _m1 = input("Please enter part of a model name to pick your model. Remember you also need to have secret for their API key already defined in your secrets:")
             print("Please try again by using e.g. `bc = dhb.c('model_name')` with a model name in:")
@@ -67,11 +67,14 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         if model not in self.models:
             raise ValueError(f"Model {model} not found in LiteLLM models. Please check the model name or use a different model.")
         self.model = model
+        self.hide_msg = hide_msg
         self.vars_for_hist = dict()
         if var_names is not None:
             self.add_vars(var_names)
         if tools is None:
             tools = [read_url]
+        if ns is None:
+            ns = inspect.currentframe().f_back.f_globals
         super().__init__(model=model, sp=sp, temp=temp, search=search, tools=tools, hist=hist, ns=ns, cache=cache, cache_idxs=cache_idxs, ttl=ttl)
 
     def get_litellm_models(self):
@@ -99,7 +102,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         if var_names: self.add_vars(var_names)
         self.hist = self._build_hist(msgs, last_msg=last_msg)
         start = len(self.hist)
-        update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), i_collapsed=0, o_collapsed=1)
+        update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg, o_collapsed=1)
         response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
         output = self._new_msgs_to_output(start)
         add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt')
@@ -166,7 +169,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         "Add tools to the chat's tool list"
         if isinstance(tool_names, str):
             tool_names = tool_names.split()
-        tools = [globals().get(t) for t in tool_names if globals().get(t)]
+        tools = [self.ns.get(t) for t in tool_names if self.ns.get(t)]
         self.tools = list(self.tools or []) + tools
     
     def add_vars_and_tools(self, var_names:Union[list,str]=None, tool_names:Union[list,str]=None):
