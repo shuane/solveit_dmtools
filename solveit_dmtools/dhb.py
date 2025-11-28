@@ -67,7 +67,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             _m1 = input("Please enter part of a model name to pick your model. Remember you also need to have secret for their API key already defined in your secrets:")
             print(f"Please try again by using e.g. `bc = dhb.c('model_name')` with a model name e.g. pick from these found by searching for '{_m1}':")
             # search case-insensitively and return models that match
-            print('\n'.join([m for m in self.models if _m1.lower() in m.lower()]))
+            print('\n'.join([m for m in self.models if _m1.lower() in m.lower() or '###' in m]))
             return None
         if model not in self.models:
             raise ValueError(f"Model {model} not found in LiteLLM models. Please check the model name or use a different model.")
@@ -111,7 +111,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             if not (already_listed and model["id"].lower() in [al.replace('openrouter/', '').lower() for al in already_listed]):
                 ret_models.append(
                     {
-                        "id": f"openrouter/{model['id']} \t\t# (note - it may get rate limited more)",
+                        "id": f"openrouter/{model['id']}",
                         "limits": {
                             "requests/minute": 20,
                             "requests/day": 50,
@@ -125,7 +125,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         data = read_url(url, as_md=False)
         models = json.loads(data)
         already_listed = [k for k in models.keys() if k != 'sample_spec']
-        return already_listed + sorted([orm['id'] for orm in self.fetch_openrouter_models(already_listed)])
+        return already_listed + [f"### The following ones are listed by OpenRouter but not LiteLLM (may still work)"] + sorted([orm['id'] for orm in self.fetch_openrouter_models(already_listed)])
    
     def add_vars(self, var_names:Union[list,str]=None):
         "Add variables to conversation as user message"
@@ -216,7 +216,7 @@ def _trunc_tool_result(self:BackupChat, result, max_len=100, is_last_msg=False):
 def _format_tool_details(self:BackupChat, tool_id, func_name, args, result, is_last_msg=False):
     result_str = self._trunc_tool_result(result)
     tool_json = json.dumps({"id": tool_id, "call": {"function": func_name, "arguments": args}, "result": result_str}, indent=2)
-    return f"<details class='tool-usage-details'>\n\n```json\n{tool_json}\n```\n\n</details>"    
+    return f"<details class='tool-usage-details'>\n\n```json\n{tool_json}\n```\n\n</details>"
 
 # %% ../nbs/01_dhb.ipynb 4
 @patch
