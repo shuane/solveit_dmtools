@@ -164,6 +164,8 @@ Use a Socratic approach - guide through questions rather than direct answers - u
     
     def add_tools(self, tool_names:Union[list,str]=None):
         "Add tools to the chat's tool list"
+        if isinstance(tool_names, str):
+            tool_names = tool_names.split()
         tools = [globals().get(t) for t in tool_names if globals().get(t)]
         self.tools = list(self.tools or []) + tools
     

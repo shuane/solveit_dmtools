@@ -7,7 +7,7 @@
 
 ``` python
 from dialoghelper.core import *
-from solveit_dmtools import dhb, dhp, fab
+from solveit_dmtools import * # dhb, dhp, fab
 ```
 
 ``` python
