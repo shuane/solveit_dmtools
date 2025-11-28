@@ -17,9 +17,12 @@ from solveit_dmtools import dhb
 # then in another cell
 # bc = dhb.c() to search model names
 bc = dhb.c("model-name")
+# then in another cell
 bc("Hi")
 ```
 """
+
+# %% ../nbs/01_dhb.ipynb 2
 import json
 import re
 from dialoghelper.core import *
@@ -27,6 +30,7 @@ from lisette import *
 from typing import Optional, Union
 from ipykernel_helper import read_url
 import inspect
+from fastcore.tools import patch
 
 class BackupChat(Chat):
     models = None
@@ -102,9 +106,9 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             pricing = float(model.get("pricing", {}).get("completion", "1")) + float(
                 model.get("pricing", {}).get("prompt", "1")
             )
-            if pricing != 0 or ":free" not in model["id"] or model["id"].lower() in ignored_models:
+            if pricing != 0 or ":free" not in model["id"] or model["id"].lower() in [im.lower() for im in ignored_models]:
                 continue
-            if not already_listed or model["id"] not in already_listed:
+            if not (already_listed and model["id"].lower() in [al.replace('openrouter/', '').lower() for al in already_listed]):
                 ret_models.append(
                     {
                         "id": f"openrouter/{model['id']} \t\t# (note - it may get rate limited more)",
@@ -122,80 +126,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         models = json.loads(data)
         already_listed = [k for k in models.keys() if k != 'sample_spec']
         return already_listed + sorted([orm['id'] for orm in self.fetch_openrouter_models(already_listed)])
-    
-    def __call__(self, 
-                msg=None,
-                prefill=None,
-                temp=None,
-                think=None,
-                search=None,
-                stream=False,
-                max_steps=2,
-                final_prompt='You have no more tool uses. Please summarize your findings. If you did not complete your goal please tell the user what further work needs to be done so they can choose how best to proceed.',
-                return_all=False,
-                var_names=None, # list of variable names to add to the chat
-                **kwargs,
-                ):
-        msgs = [m for m in find_msgs() if m['pinned'] or not m['skipped']]
-        last_msg = read_msg(-1)['msg']
-        curr_msg = read_msg(0)['msg']
-        if var_names: self.add_vars(var_names)
-        self.hist = self._build_hist(msgs, last_msg=last_msg)
-        start = len(self.hist)
-        update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg)
-        response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
-        output = self._new_msgs_to_output(start)
-        # if no exceptions, collapse output
-        update_msg(msgid=curr_msg['id'], o_collapsed=True)
-        add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt')
-        return response
-
-    def _build_hist(self, msgs:list, last_msg=None):
-        if last_msg is None: curr = len(msgs)
-        else:
-            try: curr = next(i for i,m in enumerate(msgs) if m['id'] == last_msg['id'])
-            except StopIteration: curr = len(msgs)
-        hist = []
-        for m in msgs[:curr+1]:
-            eol = '\n'
-            if m['msg_type'] == 'code': hist.append({'role': 'user', 'content': f"```python{eol}{m['content']}{eol}```{eol}Output: {m.get('output', '[]')}"})
-            elif m['msg_type'] == 'note' or m['msg_type'] == 'raw': hist.append({'role': 'user', 'content': m['content']})
-            elif m['msg_type'] == 'prompt':
-                hist.append({'role': 'user', 'content': m['content']})
-                if m.get('output'): hist.append({'role': 'assistant', 'content': m['output']})
-        
-        hist = hist + self._vars_as_msg() + [{'role': 'assistant', 'content': '.'}] # empty assistant msg to prevent flipping chat msg to look like prefill
-        return hist
-
-    def _vars_as_msg(self):
-        if self.vars_for_hist and len(self.vars_for_hist.keys()):
-            content = "Here are the requested variables:\n" + json.dumps(self.vars_for_hist)
-            return [{'role': 'user', 'content': content}]
-        else:
-            return []
-
-    def _new_msgs_to_output(self, start):
-        new_msgs = self.hist[start+1:]
-        parts = []
-        for i, m in enumerate(new_msgs):
-            if m.get('role') == 'assistant' and m.get('tool_calls'):
-                for tc in m['tool_calls']:
-                    result_msg = next((r for r in new_msgs if r.get('tool_call_id') == tc['id']), None)
-                    if result_msg: parts.append(self._format_tool_details(tc['id'], tc['function']['name'], json.loads(tc['function']['arguments']), result_msg['content'], is_last_msg=(i == len(new_msgs)-1)))
-            elif m.get('role') == 'assistant' and m.get('content'):
-                content = m['content']
-                if 'You have no more tool uses' not in content: parts.append(content)
-        return '\n\n'.join(parts)
-    
-    def _trunc_tool_result(self, result, max_len=100, is_last_msg=False):
-        if len(str(result)) <= max_len or is_last_msg: return result
-        return str(result)[:max_len] + '<TRUNCATED>'
-    
-    def _format_tool_details(self, tool_id, func_name, args, result, is_last_msg=False):
-        result_str = self._trunc_tool_result(result)
-        tool_json = json.dumps({"id": tool_id, "call": {"function": func_name, "arguments": args}, "result": result_str}, indent=2)
-        return f"<details class='tool-usage-details'>\n\n```json\n{tool_json}\n```\n\n</details>"    
-    
+   
     def add_vars(self, var_names:Union[list,str]=None):
         "Add variables to conversation as user message"
         if isinstance(var_names, str):
@@ -206,17 +137,101 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         # Add each var to the self.vars_for_hist dictionary
         for v in var_names:
             self.vars_for_hist[v.strip()] = self.ns.get(v.strip(), 'NOT AVAILABLE')
+
+# %% ../nbs/01_dhb.ipynb 3
+@patch
+def __call__(self:BackupChat, 
+            msg=None,
+            prefill=None,
+            temp=None,
+            think=None,
+            search=None,
+            stream=False,
+            max_steps=2,
+            final_prompt='You have no more tool uses. Please summarize your findings. If you did not complete your goal please tell the user what further work needs to be done so they can choose how best to proceed.',
+            return_all=False,
+            var_names=None, # list of variable names to add to the chat
+            **kwargs,
+            ):
+    msgs = [m for m in find_msgs() if m['pinned'] or not m['skipped']]
+    last_msg = read_msg(-1)['msg']
+    curr_msg = read_msg(0)['msg']
+    if var_names: self.add_vars(var_names)
+    self.hist = self._build_hist(msgs, last_msg=last_msg)
+    start = len(self.hist)
+    update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg)
+    response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
+    output = self._new_msgs_to_output(start)
+    # if no exceptions, collapse output
+    update_msg(msgid=curr_msg['id'], o_collapsed=True)
+    add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt')
+    return response
+
+@patch
+def _build_hist(self:BackupChat, msgs:list, last_msg=None):
+    if last_msg is None: curr = len(msgs)
+    else:
+        try: curr = next(i for i,m in enumerate(msgs) if m['id'] == last_msg['id'])
+        except StopIteration: curr = len(msgs)
+    hist = []
+    for m in msgs[:curr+1]:
+        eol = '\n'
+        if m['msg_type'] == 'code': hist.append({'role': 'user', 'content': f"```python{eol}{m['content']}{eol}```{eol}Output: {m.get('output', '[]')}"})
+        elif m['msg_type'] == 'note' or m['msg_type'] == 'raw': hist.append({'role': 'user', 'content': m['content']})
+        elif m['msg_type'] == 'prompt':
+            hist.append({'role': 'user', 'content': m['content']})
+            if m.get('output'): hist.append({'role': 'assistant', 'content': m['output']})
     
-    def add_tools(self, tool_names:Union[list,str]=None):
-        "Add tools to the chat's tool list"
-        if isinstance(tool_names, str):
-            tool_names = tool_names.split()
-        tools = [self.ns.get(t) for t in tool_names if self.ns.get(t)]
-        self.tools = list(self.tools or []) + tools
+    hist = hist + self._vars_as_msg() + [{'role': 'assistant', 'content': '.'}] # empty assistant msg to prevent flipping chat msg to look like prefill
+    return hist
+
+@patch
+def _vars_as_msg(self:BackupChat):
+    if self.vars_for_hist and len(self.vars_for_hist.keys()):
+        content = "Here are the requested variables:\n" + json.dumps(self.vars_for_hist)
+        return [{'role': 'user', 'content': content}]
+    else:
+        return []
+
+@patch
+def _new_msgs_to_output(self:BackupChat, start):
+    new_msgs = self.hist[start+1:]
+    parts = []
+    for i, m in enumerate(new_msgs):
+        if m.get('role') == 'assistant' and m.get('tool_calls'):
+            for tc in m['tool_calls']:
+                result_msg = next((r for r in new_msgs if r.get('tool_call_id') == tc['id']), None)
+                if result_msg: parts.append(self._format_tool_details(tc['id'], tc['function']['name'], json.loads(tc['function']['arguments']), result_msg['content'], is_last_msg=(i == len(new_msgs)-1)))
+        elif m.get('role') == 'assistant' and m.get('content'):
+            content = m['content']
+            if 'You have no more tool uses' not in content: parts.append(content)
+    return '\n\n'.join(parts)
+
+@patch
+def _trunc_tool_result(self:BackupChat, result, max_len=100, is_last_msg=False):
+    if len(str(result)) <= max_len or is_last_msg: return result
+    return str(result)[:max_len] + '<TRUNCATED>'
+
+@patch
+def _format_tool_details(self:BackupChat, tool_id, func_name, args, result, is_last_msg=False):
+    result_str = self._trunc_tool_result(result)
+    tool_json = json.dumps({"id": tool_id, "call": {"function": func_name, "arguments": args}, "result": result_str}, indent=2)
+    return f"<details class='tool-usage-details'>\n\n```json\n{tool_json}\n```\n\n</details>"    
+
+# %% ../nbs/01_dhb.ipynb 4
+@patch
+def add_tools(self:BackupChat, tool_names:Union[list,str]=None):
+    "Add tools to the chat's tool list"
+    if isinstance(tool_names, str):
+        tool_names = tool_names.split()
+    tools = [self.ns.get(t) for t in tool_names if self.ns.get(t)]
+    self.tools = list(self.tools or []) + tools
     
-    def add_vars_and_tools(self, var_names:Union[list,str]=None, tool_names:Union[list,str]=None):
-        "Add both variables and tools to the chat's lists"
-        self.add_tools(tool_names)
-        self.add_vars(var_names)
-                
+@patch
+def add_vars_and_tools(self:BackupChat, var_names:Union[list,str]=None, tool_names:Union[list,str]=None):
+    "Add both variables and tools to the chat's lists"
+    self.add_tools(tool_names)
+    self.add_vars(var_names)
+
+# %% ../nbs/01_dhb.ipynb 5
 c = BackupChat
