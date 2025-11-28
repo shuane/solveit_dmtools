@@ -160,7 +160,7 @@ def __call__(self:BackupChat,
     self.hist = self._build_hist(msgs, last_msg=last_msg)
     start = len(self.hist)
     update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg)
-    response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
+    response = Chat.__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
     output = self._new_msgs_to_output(start)
     # if no exceptions, collapse output
     update_msg(msgid=curr_msg['id'], o_collapsed=True)
