@@ -163,7 +163,7 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         
         # Add each var to the self.vars_for_hist dictionary
         for v in var_names:
-            self.vars_for_hist[v.strip()] = globals().get(v.strip(), 'NOT AVAILABLE')
+            self.vars_for_hist[v.strip()] = self.ns.get(v.strip(), 'NOT AVAILABLE')
     
     def add_tools(self, tool_names:Union[list,str]=None):
         "Add tools to the chat's tool list"
