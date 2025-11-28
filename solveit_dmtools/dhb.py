@@ -61,8 +61,9 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             self.models = self.get_litellm_models()
         if model is None:
             _m1 = input("Please enter part of a model name to pick your model. Remember you also need to have secret for their API key already defined in your secrets:")
-            print("Please try again by using e.g. `bc = dhb.c('model_name')` with a model name in:")
-            print('\n'.join([m for m in self.models if _m1 in m]))
+            print(f"Please try again by using e.g. `bc = dhb.c('model_name')` with a model name e.g. pick from these found by searching for '{_m1}':")
+            # search case-insensitively and return models that match
+            print('\n'.join([m for m in self.models if _m1.lower() in m.lower()]))
             return None
         if model not in self.models:
             raise ValueError(f"Model {model} not found in LiteLLM models. Please check the model name or use a different model.")
@@ -77,11 +78,50 @@ Use a Socratic approach - guide through questions rather than direct answers - u
             ns = inspect.currentframe().f_back.f_globals
         super().__init__(model=model, sp=sp, temp=temp, search=search, tools=tools, hist=hist, ns=ns, cache=cache, cache_idxs=cache_idxs, ttl=ttl)
 
+    def get_openrouter_ignored(self):
+        url = "https://raw.githubusercontent.com/cheahjs/free-llm-api-resources/refs/heads/main/src/data.py"
+        code = read_url(url, as_md=False)
+        
+        # Find the OPENROUTER_IGNORED_MODELS set definition
+        pattern = r'OPENROUTER_IGNORED_MODELS\s*=\s*\{([^}]+)\}'
+        match = re.search(pattern, code, re.DOTALL)
+        models = []
+        
+        if match:
+            # Extract the content and parse the strings
+            content = match.group(1)
+            models = re.findall(r'"([^"]+)"', content)
+        return list(models)
+    
+    def fetch_openrouter_models(self, already_listed:list=None):
+        r = read_url("https://openrouter.ai/api/v1/models", as_md=False)
+        models = json.loads(r)['data']
+        ignored_models = self.get_openrouter_ignored()
+        ret_models = []
+        for model in models:
+            pricing = float(model.get("pricing", {}).get("completion", "1")) + float(
+                model.get("pricing", {}).get("prompt", "1")
+            )
+            if pricing != 0 or ":free" not in model["id"] or model["id"].lower() in ignored_models:
+                continue
+            if not already_listed or model["id"] not in already_listed:
+                ret_models.append(
+                    {
+                        "id": f"openrouter/{model['id']} \t\t# (note - it may get rate limited more)",
+                        "limits": {
+                            "requests/minute": 20,
+                            "requests/day": 50,
+                        },
+                    }
+                )
+        return ret_models
+    
     def get_litellm_models(self):
         url = "https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/model_prices_and_context_window.json"
         data = read_url(url, as_md=False)
         models = json.loads(data)
-        return [k for k in models.keys() if k != 'sample_spec']
+        already_listed = [k for k in models.keys() if k != 'sample_spec']
+        return already_listed + sorted([orm['id'] for orm in self.fetch_openrouter_models(already_listed)])
     
     def __call__(self, 
                 msg=None,
@@ -102,9 +142,11 @@ Use a Socratic approach - guide through questions rather than direct answers - u
         if var_names: self.add_vars(var_names)
         self.hist = self._build_hist(msgs, last_msg=last_msg)
         start = len(self.hist)
-        update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg, o_collapsed=1)
+        update_msg(msgid=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg)
         response = super().__call__(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
         output = self._new_msgs_to_output(start)
+        # if no exceptions, collapse output
+        update_msg(msgid=curr_msg['id'], o_collapsed=True)
         add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt')
         return response
 
