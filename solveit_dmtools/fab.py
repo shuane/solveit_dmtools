@@ -145,7 +145,8 @@ def compress():
     """Compress last message's prompt+output into a note (reduce context)"""
     from dialoghelper import read_msg, update_msg
     m = read_msg(-1)['msg']
+    curr = read_msg(0)['msg'] 
     if m['msg_type'] == "prompt":
         update_msg(i_collapsed=1, o_collapsed=1, skipped=True, msgid=m['id'])
         lines = m['content'].split('\n')
-        update_msg(content=f"# Prompt {lines[0].replace(' folded below', '')} for {lines[-1]}\n{m['output']}", msg_type="note", msgid=read_msg(0)['msg']['id'])
+        update_msg(content=f"# Prompt {lines[0].replace(' folded below', '')} for {lines[-1]}\n{m['output']}", msg_type="note", msgid=curr['id'])
