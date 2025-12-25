@@ -14,7 +14,7 @@ from solveit_dmtools import * # dhb, dhp, fab
 add_msg(content=dhb.doc, msg_type='note')
 ```
 
-    '_16aec1ea'
+    '_7f76b1ae'
 
 **Backup Chat for SolveIt using dialoghelper and lisette**
 
@@ -32,6 +32,7 @@ from solveit_dmtools import dhb
 # then in another cell
 # bc = dhb.c() to search model names
 bc = dhb.c("model-name")
+# then in another cell
 bc("Hi")
 ```
 
@@ -42,7 +43,7 @@ name to search
 bc = dhb.c()
 ```
 
-    Please try again by using e.g. `bc = dhb.c('model_name')` with a model name in:
+    Please try again by using e.g. `bc = dhb.c('model_name')` with a model name e.g. pick from these found by searching for 'gpt-5':
     azure/eu/gpt-5-2025-08-07
     azure/eu/gpt-5-mini-2025-08-07
     azure/eu/gpt-5.1
@@ -71,7 +72,14 @@ bc = dhb.c()
     azure/gpt-5.1
     azure/gpt-5.1-chat
     azure/gpt-5.1-codex
+    azure/gpt-5.1-codex-max
     azure/gpt-5.1-codex-mini
+    azure/gpt-5.2
+    azure/gpt-5.2-2025-12-11
+    azure/gpt-5.2-chat
+    azure/gpt-5.2-chat-2025-12-11
+    azure/gpt-5.2-pro
+    azure/gpt-5.2-pro-2025-12-11
     azure/us/gpt-5-2025-08-07
     azure/us/gpt-5-mini-2025-08-07
     azure/us/gpt-5-nano-2025-08-07
@@ -79,10 +87,24 @@ bc = dhb.c()
     azure/us/gpt-5.1-chat
     azure/us/gpt-5.1-codex
     azure/us/gpt-5.1-codex-mini
+    databricks/databricks-gpt-5
+    databricks/databricks-gpt-5-1
+    databricks/databricks-gpt-5-mini
+    databricks/databricks-gpt-5-nano
+    github_copilot/gpt-5
+    github_copilot/gpt-5-mini
+    github_copilot/gpt-5.1
+    github_copilot/gpt-5.1-codex-max
+    github_copilot/gpt-5.2
     gpt-5
     gpt-5.1
     gpt-5.1-2025-11-13
     gpt-5.1-chat-latest
+    gpt-5.2
+    gpt-5.2-2025-12-11
+    gpt-5.2-chat-latest
+    gpt-5.2-pro
+    gpt-5.2-pro-2025-12-11
     gpt-5-pro
     gpt-5-pro-2025-10-06
     gpt-5-2025-08-07
@@ -90,6 +112,7 @@ bc = dhb.c()
     gpt-5-chat-latest
     gpt-5-codex
     gpt-5.1-codex
+    gpt-5.1-codex-max
     gpt-5.1-codex-mini
     gpt-5-mini
     gpt-5-mini-2025-08-07
@@ -100,6 +123,10 @@ bc = dhb.c()
     openrouter/openai/gpt-5
     openrouter/openai/gpt-5-mini
     openrouter/openai/gpt-5-nano
+    openrouter/openai/gpt-5.2
+    openrouter/openai/gpt-5.2-chat
+    openrouter/openai/gpt-5.2-pro
+    ### The following ones are listed by OpenRouter but not LiteLLM (may still work)
 
 ``` python
 bc = dhb.c("openrouter/openai/gpt-5-codex")
@@ -112,17 +139,18 @@ prompt cell is added after it with input/output from the other LLM.
 bc("Hi, can you use tools?")
 ```
 
-I can use the built-in URL reader, but no other tools are currently
-available in this session. What would you like to do—do you have other
-tools or variables you’d like to add?
+I can access the `read_url` tool to fetch web content, but since it can
+be costly I’ll only use it if you confirm. Just let me know if you’d
+like me to run it—or if there are other resources you want to bring into
+the conversation.
 
 <details>
 
-- id: `gen-1763944919-qpn4Xb5hfcJcAhCAa8nd`
+- id: `gen-1766668312-vCutBfXd02LupXcn58fA`
 - model: `openai/gpt-5-codex`
 - finish_reason: `stop`
 - usage:
-  `Usage(completion_tokens=302, prompt_tokens=1706, total_tokens=2008, completion_tokens_details=CompletionTokensDetailsWrapper(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=256, rejected_prediction_tokens=None, text_tokens=None, image_tokens=0), prompt_tokens_details=PromptTokensDetailsWrapper(audio_tokens=0, cached_tokens=0, text_tokens=None, image_tokens=None, video_tokens=0), cost=0.0051525, is_byok=False, cost_details={'upstream_inference_cost': None, 'upstream_inference_prompt_cost': 0.0021325, 'upstream_inference_completions_cost': 0.00302})`
+  `Usage(completion_tokens=125, prompt_tokens=1814, total_tokens=1939, completion_tokens_details=CompletionTokensDetailsWrapper(accepted_prediction_tokens=None, audio_tokens=None, reasoning_tokens=64, rejected_prediction_tokens=None, text_tokens=None, image_tokens=0), prompt_tokens_details=PromptTokensDetailsWrapper(audio_tokens=0, cached_tokens=0, text_tokens=None, image_tokens=None, video_tokens=0), cost=0.0035175, is_byok=False, cost_details={'upstream_inference_cost': None, 'upstream_inference_prompt_cost': 0.0022675, 'upstream_inference_completions_cost': 0.00125})`
 
 </details>
 
@@ -130,9 +158,10 @@ tools or variables you’d like to add?
 
 ##### 🤖Reply🤖<!-- SOLVEIT_SEPARATOR_7f3a9b2c -->
 
-I can use the built-in URL reader, but no other tools are currently
-available in this session. What would you like to do—do you have other
-tools or variables you’d like to add?
+I can access the `read_url` tool to fetch web content, but since it can
+be costly I’ll only use it if you confirm. Just let me know if you’d
+like me to run it—or if there are other resources you want to bring into
+the conversation.
 
 ``` python
 bc("Can you please read https://raw.githubusercontent.com/AnswerDotAI/fhdaisy/refs/heads/main/README.md and give the elevator pitch and some sample code? No need to store the raw content.")
@@ -267,7 +296,7 @@ automatically, keeping your FastHTML views tidy and expressive.
 add_msg(content=dhp.doc, msg_type="note")
 ```
 
-    '_94fe5acd'
+    '_2f3eacbc'
 
 **Dialog Helper for Polya’s Problem-Solving Method**
 
@@ -694,39 +723,82 @@ INPUT:
 
 \$prompt
 
+``` python
+fab.compress()
+```
+
+(From fab.p.explain_code folded below) \# IDENTITY and PURPOSE
+
+You are an expert coder that takes code and documentation as input and
+do your best to explain it.
+
+Take a deep breath and think step by step about how to best accomplish
+this goal using the following steps. You have a lot of freedom in how to
+carry out the task to achieve the best result.
+
+# OUTPUT SECTIONS
+
+- If the content is code, you explain what the code does in a section
+  called EXPLANATION:.
+
+- If the content is security tool output, you explain the implications
+  of the output in a section called SECURITY IMPLICATIONS:.
+
+- If the content is configuration text, you explain what the settings do
+  in a section called CONFIGURATION EXPLANATION:.
+
+- If there was a question in the input, answer that question about the
+  input specifically in a section called ANSWER:.
+
+# OUTPUT
+
+- Do not output warnings or notes—just the requested sections.
+
+# INPUT:
+
+INPUT:
+
+\$prompt
+
 ##### 🤖Reply🤖<!-- SOLVEIT_SEPARATOR_7f3a9b2c -->
 
-**EXPLANATION:**
+I’ll analyze the blogtopod.py code for you.
 
-This Python script (`blogtopod.py`) converts blog posts into
-podcast-style audio files using text-to-speech. Here’s what it does:
+## EXPLANATION
 
-The script fetches a blog post from a URL, extracts the main content,
-and converts it to audio using OpenAI’s TTS API. It processes the text
-in chunks (since TTS APIs have size limits), generates audio for each
-chunk, then combines them into a single MP3 file.
+This Python script converts blog posts into podcast audio files. Here’s
+what it does:
+
+**Core functionality:** - Takes a blog URL as input - Scrapes the blog
+content using BeautifulSoup - Extracts the main article text and cleans
+it up - Converts the text to speech using OpenAI’s TTS API - Saves the
+result as an MP3 file
 
 **Key components:**
 
-- Uses `contextkit.read_url` to extract article content from URLs
-- Leverages `openai` library for text-to-speech conversion (voice:
-  “alloy”)
-- Splits text into ~4000 character chunks at sentence boundaries to
-  avoid cutting mid-sentence
-- Uses `pydub` to concatenate audio segments into one file
-- Saves the final audio as `output.mp3`
+1.  **Content extraction** (`extract_article_content`): Removes
+    navigation, ads, and other non-article elements by filtering out
+    common HTML tags like `<nav>`, `<footer>`, `<aside>`, etc.
 
-**Main workflow:** 1. Parse the URL and extract article text 2. Break
-text into manageable chunks 3. Generate audio for each chunk via OpenAI
-TTS 4. Combine all audio segments 5. Export as a single MP3 file
+2.  **Text cleaning** (`clean_text`): Removes extra whitespace and
+    normalizes the text for better speech synthesis.
 
-The script is designed to run from command line, taking a blog URL as an
-argument. It requires an OpenAI API key to function.
+3.  **TTS conversion** (`text_to_speech`): Uses OpenAI’s API with the
+    “tts-1” model and “alloy” voice to generate audio. Handles long
+    texts by chunking them into segments under 4096 characters.
 
-------------------------------------------------------------------------
+4.  **Main flow**: Reads URL from command line → fetches HTML → extracts
+    article → cleans text → converts to speech → saves as MP3
 
-Would you like me to explain any specific part in more detail, or would
-you like to explore how you might modify or extend this code?
+**Dependencies**: Requires `requests`, `beautifulsoup4`, `openai`, and
+`python-dotenv` libraries.
+
+Would you like me to explain any specific part in more detail, or do you
+have questions about how certain functions work?
+
+``` python
+fab.compress()
+```
 
 To go back full-circle, we can have a different LLM correct the results…
 

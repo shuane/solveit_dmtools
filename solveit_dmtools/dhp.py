@@ -79,6 +79,7 @@ If you feel stuck, run `dhp.help()` and it will submit the prompt cell it create
 __all__ = ['u', 'p', 'a', 'r', 'doc', 'understand', 'plan', 'act', 'execute', 'x', 'review', 'help', 'Step', 'QQ', 'PolyaUnderstand', 'PolyaPlan', 'PolyaAct', 'PolyaReview']
 
 from dialoghelper.core import *
+import time
 
 # Step: inspired by contextpack.Topic
 class Step:
@@ -95,7 +96,7 @@ class Step:
 
 # QQ replaces the SolveIt cell with its given question/prompt/note
 class QQ:
-    def __init__(self, content:str, msg_type:str="prompt", run:bool=True):
+    def __init__(self, content:str, msg_type:str="prompt", run:bool=False):
         self.content = content
         self.msg_type = msg_type
         self.run = run
@@ -103,7 +104,7 @@ class QQ:
     def __call__(self):
         _msgid = read_msg(0)['msg']['id']
         update_msg(content=self.content, msg_type=self.msg_type, msgid=_msgid)
-        if self.run: run_msg(msgid=_msgid)
+        if self.run: time.sleep(0.1); run_msg(msgids=_msgid)
         
     def __repr__(self):
         return f"({self.msg_type}) \"{self.content}\""

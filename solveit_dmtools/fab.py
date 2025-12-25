@@ -41,6 +41,7 @@ Most Common Syntax: `prompt="Your Prompt"` in one cell then `fab.p.pattern_name(
 
 __all__ = ['p', 'compress', 'doc', 'PatternFunction', 'FabricPatterns']
 import os
+import time
 
 class PatternFunction:
     def __init__(self, func, name, description):
@@ -81,7 +82,7 @@ class FabricPatterns:
         if getattr(self, 'help', None) is None:
             self.help = self.suggest_pattern
     
-    def _create_pattern_function(self, pattern_name, pattern_dir, run=True):
+    def _create_pattern_function(self, pattern_name, pattern_dir, run=False):
         from dialoghelper.core import read_msg, update_msg, add_msg, run_msg
         """Create a callable function for a pattern"""
         def pattern_function(prompt:str="prompt"):
@@ -105,7 +106,7 @@ class FabricPatterns:
             
             m = read_msg(0)['msg']
             update_msg(content=f"(From fab.p.{str(pattern_dir).split('/')[-1]} folded below)\n{prompt_content}", msg_type="prompt", i_collapsed=1, msgid=m['id'])
-            if run: run_msg(msgid=m['id'])
+            if run: time.sleep(1); run_msg(msgids=m['id'])
             add_msg(content="fab.compress()", msg_type="code")
         
         # Wrap the function with PatternFunction
