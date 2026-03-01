@@ -172,8 +172,8 @@ async def _async_call(self:BackupChat,
             ):
     dname = '/' + self._dname.lstrip('/') if self._dname else ''
     msgs = [m for m in await find_msgs(dname=dname) if m['pinned'] or not m['skipped']]
-    last_msg = await read_msg(-1) # , dname=dname)
-    curr_msg = await read_msg(0) #, dname=dname)
+    last_msg = await read_msg(-1, dname=dname)
+    curr_msg = await read_msg(0, dname=dname)
     if var_names: self.add_vars(var_names)
     self.hist = self._build_hist(msgs, last_msg=last_msg)
     start = len(self.hist)
