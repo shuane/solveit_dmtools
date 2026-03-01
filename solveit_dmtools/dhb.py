@@ -168,12 +168,12 @@ async def _async_call(self:BackupChat,
             final_prompt='You have no more tool uses. Please summarize your findings. If you did not complete your goal please tell the user what further work needs to be done so they can choose how best to proceed.',
             return_all=False,
             var_names=None, # list of variable names to add to the chat
+            last_msg=None,
+            curr_msg=None,
             **kwargs,
             ):
     dname = '/' + self._dname.lstrip('/') if self._dname else ''
     msgs = [m for m in await find_msgs(dname=dname) if m['pinned'] or not m['skipped']]
-    last_msg = await read_msg(-1, relative=True, dname='')
-    curr_msg = await read_msg(0, relative=True, dname='')
     if var_names: self.add_vars(var_names)
     self.hist = self._build_hist(msgs, last_msg=last_msg)
     start = len(self.hist)
@@ -198,7 +198,10 @@ def __call__(self:BackupChat,
             var_names=None, # list of variable names to add to the chat
             **kwargs,
             ):
-    return run_async(self._async_call(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, var_names=var_names, **kwargs))
+    dname =  '/' + self._dname.lstrip('/') if self._dname else ''
+    last_msg = call_endp('read_msg_', dname, json=True, n=-1, relative=True)
+    curr_msg = call_endp('read_msg_', dname, json=True, n=0, relative=True)
+    return run_async(self._async_call(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, var_names=var_names, last_msg=last_msg, curr_msg=curr_msg, **kwargs))
 
 @patch
 def _build_hist(self:BackupChat, msgs:list, last_msg=None):
