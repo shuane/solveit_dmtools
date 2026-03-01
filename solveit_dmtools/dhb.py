@@ -168,22 +168,20 @@ async def _async_call(self:BackupChat,
             final_prompt='You have no more tool uses. Please summarize your findings. If you did not complete your goal please tell the user what further work needs to be done so they can choose how best to proceed.',
             return_all=False,
             var_names=None, # list of variable names to add to the chat
-            _msg_id=None, # pre-captured msg id from main thread
             **kwargs,
             ):
     dname = '/' + self._dname.lstrip('/') if self._dname else ''
     msgs = [m for m in await find_msgs(dname=dname) if m['pinned'] or not m['skipped']]
-    curr_msg_id = _msg_id or find_msg_id()
-    last_msg = await read_msg(-1, id=curr_msg_id, dname=dname)
-    curr_msg = await read_msg(0, id=curr_msg_id, dname=dname)
+    last_msg = await read_msg(-1) # , dname=dname)
+    curr_msg = await read_msg(0) #, dname=dname)
     if var_names: self.add_vars(var_names)
     self.hist = self._build_hist(msgs, last_msg=last_msg)
     start = len(self.hist)
-    await update_msg(id=curr_msg_id, content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg, dname=dname)
+    await update_msg(id=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg, dname=dname)
     response = Chat.__call__(self, msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
     output = self._new_msgs_to_output(start)
-    await update_msg(id=curr_msg_id, o_collapsed=True, dname=dname)
-    await add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt', id=curr_msg_id, dname=dname)
+    await update_msg(id=curr_msg['id'], o_collapsed=True, dname=dname)
+    await add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt', id=curr_msg['id'], dname=dname)
     return response
 
 @patch
@@ -200,8 +198,7 @@ def __call__(self:BackupChat,
             var_names=None, # list of variable names to add to the chat
             **kwargs,
             ):
-    curr_msg_id = find_msg_id()
-    return run_async(self._async_call(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, var_names=var_names, _msg_id=curr_msg_id, **kwargs))
+    return run_async(self._async_call(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, var_names=var_names, **kwargs))
 
 @patch
 def _build_hist(self:BackupChat, msgs:list, last_msg=None):

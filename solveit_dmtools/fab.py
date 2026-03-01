@@ -43,7 +43,7 @@ __all__ = ['p', 'compress', 'doc', 'PatternFunction', 'FabricPatterns']
 import os
 import time
 from .core import run_async
-from dialoghelper.core import find_msg_id, find_dname, update_msg, add_msg, run_msg, read_msg
+from dialoghelper.core import find_dname, update_msg, add_msg, run_msg, read_msg
 
 class PatternFunction:
     def __init__(self, func, name, description):
@@ -105,15 +105,14 @@ class FabricPatterns:
             # Add reference to text variable
             prompt_content += f"\n\n$`{prompt}`"
             
-            _msgid = _msg_id or find_msg_id()
+            _msgid = _msg_id or (await read_msg(0))['id']
             await update_msg(content=f"(From fab.p.{str(pattern_dir).split('/')[-1]} folded below)\n{prompt_content}", msg_type="prompt", i_collapsed=1, id=_msgid, dname=_dname)
             if run: time.sleep(1); await run_msg(ids=_msgid, dname=_dname)
             await add_msg(content="fab.compress()", msg_type="code", id=_msgid, dname=_dname)
 
         def pattern_function(prompt:str="prompt"):
-            _msg_id = find_msg_id()
             _dname = find_dname()
-            return run_async(_async_pattern_function(prompt, _msg_id=_msg_id, _dname=_dname))
+            return run_async(_async_pattern_function(prompt, _dname=_dname))
         
         # Wrap the function with PatternFunction
         description = self.pattern_descriptions.get(pattern_name, f"Pattern: {pattern_name}")
@@ -149,8 +148,8 @@ class FabricPatterns:
 p = FabricPatterns()
 
 async def _async_compress(_msg_id=None, _dname=None):
-    _msg_id = _msg_id or find_msg_id()
-    m = await read_msg(-1, id=_msg_id, dname=_dname)
+    _msg_id = _msg_id or (await read_msg(0))['id']
+    m = await read_msg(-1)
     curr_id = _msg_id
     if m['msg_type'] == "prompt":
         await update_msg(i_collapsed=1, o_collapsed=1, skipped=True, id=m['id'], dname=_dname)
@@ -159,6 +158,5 @@ async def _async_compress(_msg_id=None, _dname=None):
 
 def compress():
     """Compress last message's prompt+output into a note (reduce context)"""
-    _msg_id = find_msg_id()
     _dname = find_dname()
-    return run_async(_async_compress(_msg_id=_msg_id, _dname=_dname))
+    return run_async(_async_compress(_dname=_dname))

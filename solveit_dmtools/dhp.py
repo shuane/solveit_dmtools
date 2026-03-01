@@ -103,14 +103,13 @@ class QQ:
         self.run = run
 
     async def _async_call(self, _msg_id=None, _dname=None):
-        _msgid = _msg_id or find_msg_id()
+        _msgid = _msg_id or (await read_msg(0))['id']
         await update_msg(content=self.content, msg_type=self.msg_type, id=_msgid, dname=_dname)
         if self.run: time.sleep(0.1); await run_msg(ids=_msgid, dname=_dname)
 
     def __call__(self):
-        _msg_id = find_msg_id()
         _dname = find_dname()
-        return run_async(self._async_call(_msg_id=_msg_id, _dname=_dname))
+        return run_async(self._async_call(_dname=_dname))
         
     def __repr__(self):
         return f"({self.msg_type}) \"{self.content}\""
