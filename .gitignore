@@ -1,4 +1,3 @@
-_docs/
 _proc/
 
 *.bak
@@ -151,4 +150,4 @@ checklink/cookies.txt
 # Quarto
 .quarto
 
-nbs/CONTROLLER.ipynb
+CONTROLLER.ipynb

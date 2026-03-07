@@ -33,27 +33,7 @@ from ipykernel_helper import read_url
 import inspect
 from fastcore.all import patch
 
-class BackupChat(Chat):
-    models = None
-    vars_for_hist = None
-    model = None
-
-    def __init__(self,
-                model: str = None,
-                sp='',
-                temp=0,
-                search=False,
-                tools: list = None,
-                hist: list = None,
-                ns: Optional[dict] = None,
-                cache=False,
-                cache_idxs: list = [-1],
-                ttl=None,
-                var_names: Union[list,str] = None,
-                hide_msg:bool=False, # whether to hide the cell that includes a BackupChat.__call__
-    ):
-        if sp is None or sp == '':
-            sp = """You're continuing a conversation from another session. Variables are marked as $`varname` and tools as &`toolname` in the context.
+_DEFAULT_SP = """You're continuing a conversation from another session. Variables are marked as $`varname` and tools as &`toolname` in the context.
 
 **Available Resources**
 
@@ -76,6 +56,27 @@ Use a Socratic method - guide through questions rather than providing direct ans
 - Encourage the user to implement solutions themselves
 - Ask clarifying questions about their expertise and goals to customize your responses
 """
+
+class BackupChat(Chat):
+    models = None
+    vars_for_hist = None
+    model = None
+
+    def __init__(self,
+                model: str = None,
+                sp=None,
+                temp=0,
+                search=False,
+                tools: list = None,
+                hist: list = None,
+                ns: Optional[dict] = None,
+                cache=False,
+                cache_idxs: list = [-1],
+                ttl=None,
+                var_names: Union[list,str] = None,
+                hide_msg:bool=False, # whether to hide the cell that includes a BackupChat.__call__
+    ):
+        if sp is None or sp == '': sp = _DEFAULT_SP
         if self.models is None:
             self.models = self.get_litellm_models()
         if model is None:

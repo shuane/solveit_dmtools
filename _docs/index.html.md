@@ -799,7 +799,7 @@ carry out the task to achieve the best result.
 
 INPUT:
 
-\$prompt
+$prompt
 
 ##### 🤖Reply🤖<!-- SOLVEIT_SEPARATOR_7f3a9b2c -->
 
@@ -881,7 +881,7 @@ voices it.
 
 The next cell is running fab.compress()
 
-# Prompt (From fab.p.explain_code) for \$prompt
+# Prompt (From fab.p.explain_code) for $prompt
 
 Let me fetch the code first so I can explain it.
 
