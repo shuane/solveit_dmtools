@@ -177,10 +177,13 @@ async def _async_call(self:BackupChat,
     if var_names: self.add_vars(var_names)
     self.hist = self._build_hist(msgs, last_msg=last_msg)
     start = len(self.hist)
-    await update_msg(id=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg, dname=dname)
+    instance_name = next((k for k, v in self.ns.items() if v is self), None)
+    if instance_name and f"{instance_name}(" in curr_msg['content']:
+        await update_msg(id=curr_msg['id'], content="# " + curr_msg['content'].replace('\n', '\n# '), skipped=self.hide_msg, dname=dname)
     response = Chat.__call__(self, msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, **kwargs)
     output = self._new_msgs_to_output(start)
-    await update_msg(id=curr_msg['id'], o_collapsed=True, dname=dname)
+    if instance_name and f"{instance_name}(" in curr_msg['content']:
+        await update_msg(id=curr_msg['id'], o_collapsed=True, dname=dname)
     await add_msg(content=f"**Prompt ({self.model}):** {msg}", output=output, msg_type='prompt', id=curr_msg['id'], dname=dname)
     return response
 
@@ -196,11 +199,15 @@ def __call__(self:BackupChat,
             final_prompt='You have no more tool uses. Please summarize your findings. If you did not complete your goal please tell the user what further work needs to be done so they can choose how best to proceed.',
             return_all=False,
             var_names=None, # list of variable names to add to the chat
+            msg_id=None, # if provided, use this message id as the anchor instead of the current message
             **kwargs,
             ):
     dname =  '/' + self._dname.lstrip('/') if self._dname else ''
     last_msg = call_endp('read_msg_', dname, json=True, n=-1, relative=True)
-    curr_msg = call_endp('read_msg_', dname, json=True, n=0, relative=True)
+    if msg_id is not None:
+        curr_msg = call_endp('read_msg_', dname, json=True, id=msg_id, n=0, relative=True)
+    else:
+        curr_msg = call_endp('read_msg_', dname, json=True, n=0, relative=True)
     return run_async(self._async_call(msg=msg, prefill=prefill, temp=temp, think=think, search=search, stream=stream, max_steps=max_steps, final_prompt=final_prompt, return_all=return_all, var_names=var_names, last_msg=last_msg, curr_msg=curr_msg, **kwargs))
 
 @patch
